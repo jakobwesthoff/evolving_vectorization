@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
+#include <string.h>
 
 #include <cairo.h>
 
@@ -89,10 +89,27 @@ int main( int argc, char** argv )
     best_error    = current_error;
     printf( "%u/%u (%u)", benefitial, 0, best_error );
     
-    for ( i=0; i<10000; ++i ) 
+    for ( i=0; i<1000000; ++i ) 
     {
         unsigned int new_error;
         polygons_t* new_polygons;
+
+        // Write output images every 1000 evolutions
+        if ( i % 1000 == 0 ) 
+        {
+            char* filename;
+
+            initialize_new_render_surface( input_surface, &render_surface );
+            drawPolygons( render_surface, best_polygons );
+            
+            filename = malloc( sizeof( char ) * ( strlen( argv[2] ) + 12 + 1 ) );
+            sprintf( filename, "%s/%07u.png", argv[2], i );
+            cairo_surface_write_to_png( render_surface, filename );
+
+            printf( "\n%s written.\n", filename );
+            free( filename );
+        }
+
         initialize_new_render_surface( input_surface, &render_surface );
         new_polygons = copyPolygons( polygons );
         evolvePolygons( new_polygons );
@@ -118,7 +135,7 @@ int main( int argc, char** argv )
             free( new_polygons );
         }
 
-        printf( "\r%u/%u (%u)", benefitial, i, best_error );
+        printf( "\r%u/%u (%u)                ", benefitial, i, best_error );
     }
     printf( "\n" );
 

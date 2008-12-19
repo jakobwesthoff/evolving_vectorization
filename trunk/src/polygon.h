@@ -2,7 +2,6 @@
 #define POLYGON_H
 
 #define POLYGON_VERTICES 6
-#define MAX_POLYGON_VERTICES 16
 #define POLYGON_COUNT 50
 
 typedef struct vertex 
@@ -12,9 +11,8 @@ typedef struct vertex
 
 typedef struct polygon
 {
-    vertex_t vertex[MAX_POLYGON_VERTICES];
+    vertex_t vertex[POLYGON_VERTICES];
     int color[4]; // rgba
-    int vertex_count;
 } polygon_t;
 
 typedef struct polygons 

@@ -25,6 +25,7 @@ typedef struct polygons
 polygons_t* initialize_polygons( cairo_surface_t* original ); 
 
 void draw_polygons( cairo_surface_t* surface, polygons_t* polygons );
+void draw_polygons_to_svg( polygons_t* polygons, char* filename );
 
 void evolve_polygons( polygons_t* polygons );
 

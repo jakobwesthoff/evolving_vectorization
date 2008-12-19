@@ -8,9 +8,9 @@
 #include "random.h"
 #include "polygon.h"
 
-#define INITIAL_TEMPERATURE 500.0
-#define EPSILON 0.001
-#define ALPHA 0.95
+#define INITIAL_TEMPERATURE 1000.0
+#define EPSILON 0.00001
+#define ALPHA 0.99999
 
 static unsigned int quadratic_error( cairo_surface_t* original, cairo_surface_t* destination ) 
 {
@@ -107,7 +107,7 @@ int main( int argc, char** argv )
     draw_polygons( render_surface, polygons );
     current_fitness = quadratic_error( input_surface, render_surface );
     best_fitness    = current_fitness;
-    printf( "%u/%u (%u)", benefitial, 0, best_fitness );
+    printf( "%u/%u/%f (%u)", benefitial, 0, temperature, best_fitness );
     
     while( 1 ) 
     {
@@ -122,11 +122,23 @@ int main( int argc, char** argv )
             initialize_new_render_surface( input_surface, &render_surface );
             draw_polygons( render_surface, best_polygons );
             
-            filename = malloc( sizeof( char ) * ( strlen( argv[2] ) + 15 + 1 ) );
-            sprintf( filename, "%s/%10u.png", argv[2], iteration );
+            filename = malloc( sizeof( char ) * ( strlen( argv[2] ) + 32 ) );
+            sprintf( filename, "%s/%010u.png", argv[2], iteration );
             cairo_surface_write_to_png( render_surface, filename );
 
-            printf( "\n%s written.\n", filename );
+            printf( "\nPNG: %s written.\n", filename );
+            free( filename );
+        }
+
+        // Write a svg every 10000 iterations
+        if ( iteration % 10000 == 0 ) 
+        {
+            char* filename = malloc( sizeof( char ) * ( strlen( argv[2] ) + 32 ) );
+            sprintf( filename, "%s/%010u.svg", argv[2], iteration );
+
+            draw_polygons_to_svg( best_polygons, filename );
+
+            printf( "SVG: %s written.\n", filename );
             free( filename );
         }
 
@@ -169,7 +181,7 @@ int main( int argc, char** argv )
             }
         }
 
-        printf( "\r%u/%u/%d (%u)                ", benefitial, iteration, temperature, best_fitness );
+        printf( "\r%u/%u/%f (%u)                ", benefitial, iteration, temperature, best_fitness );
 
         // Check for abort condition
         if( temperature < epsilon ) 

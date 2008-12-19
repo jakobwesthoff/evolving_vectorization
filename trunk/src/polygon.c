@@ -28,11 +28,6 @@ void draw_polygons( cairo_surface_t* surface, polygons_t* polygons )
             (double)(polygons->polygon[i].color[2]) / 255.0,
             (double)(polygons->polygon[i].color[3]) / 255.0
         );
-/*        printf( "moveto: %i, %i\n", 
-            polygons->polygon[i].vertex[POLYGON_VERTICES - 1].x,
-            polygons->polygon[i].vertex[POLYGON_VERTICES - 1].y
-        );
-*/
         cairo_move_to( cr, 
             polygons->polygon[i].vertex[POLYGON_VERTICES - 1].x,
             polygons->polygon[i].vertex[POLYGON_VERTICES - 1].y
@@ -40,11 +35,6 @@ void draw_polygons( cairo_surface_t* surface, polygons_t* polygons )
         
         for( j=0; j<POLYGON_VERTICES; ++j ) 
         {
-/*            printf( "lineto: %i, %i\n",
-                polygons->polygon[i].vertex[j].x,
-                polygons->polygon[i].vertex[j].y
-            );
-*/
             cairo_line_to( cr,
                 polygons->polygon[i].vertex[j].x,
                 polygons->polygon[i].vertex[j].y
@@ -57,6 +47,24 @@ void draw_polygons( cairo_surface_t* surface, polygons_t* polygons )
     }
     
     cairo_destroy( cr );
+}
+
+void draw_polygons_to_svg( polygons_t* polygons, char* filename ) 
+{
+    cairo_surface_t* svg_surface = (cairo_surface_t*)cairo_svg_surface_create( filename, 
+        (double)(polygons->original_width),
+        (double)(polygons->original_height)
+    );
+
+    if ( cairo_surface_status( svg_surface ) != CAIRO_STATUS_SUCCESS ) 
+    {
+        printf( "Could not create svg surface.\n" );
+        exit( EXIT_FAILURE );
+    }
+
+    draw_polygons( svg_surface, polygons );
+
+    cairo_surface_destroy( svg_surface );
 }
 
 void evolve_polygons( polygons_t* polygons ) 

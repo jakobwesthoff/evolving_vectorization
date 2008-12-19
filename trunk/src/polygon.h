@@ -22,9 +22,6 @@ typedef struct polygons
 } polygons_t;
 
 
-static int rand_between( int start, int end );
-
-
 polygons_t* initialize_polygons( cairo_surface_t* original ); 
 
 void draw_polygons( cairo_surface_t* surface, polygons_t* polygons );

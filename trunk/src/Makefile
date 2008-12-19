@@ -3,7 +3,7 @@ MYLDFLAGS=`pkg-config --libs cairo libpng12`
 
 all: evolver
 
-evolver: polygon.o
+evolver: polygon.o random.o
 
 %.o: %.c
 	$(CC) -c $(CFLAGS) $(CPPFLAGS) ${MYCFLAGS} $< -o $@

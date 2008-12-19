@@ -25,12 +25,12 @@ typedef struct polygons
 static int rand_between( int start, int end );
 
 
-polygons_t* initializePolygons( cairo_surface_t* original ); 
+polygons_t* initialize_polygons( cairo_surface_t* original ); 
 
-void drawPolygons( cairo_surface_t* surface, polygons_t* polygons );
+void draw_polygons( cairo_surface_t* surface, polygons_t* polygons );
 
-void evolvePolygons( polygons_t* polygons );
+void evolve_polygons( polygons_t* polygons );
 
-polygons_t* copyPolygons( polygons_t* polygons );
+polygons_t* copy_polygons( polygons_t* polygons );
 
 #endif

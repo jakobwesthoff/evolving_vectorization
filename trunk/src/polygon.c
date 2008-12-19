@@ -3,21 +3,17 @@
 #include <string.h>
 #include <cairo.h>
 
+#include "random.h"
 #include "polygon.h"
 
-static int rand_between( int start, int end ) 
-{
-    return ( ( rand() % ( end - start + 1 ) ) + start );
-}
-
-polygons_t* copyPolygons( polygons_t* polygons )
+polygons_t* copy_polygons( polygons_t* polygons )
 {
     polygons_t* copy = malloc( sizeof( polygons_t ) * sizeof( char ) );
     memcpy( copy, polygons, sizeof( polygons_t ) * sizeof( char ) );
     return copy;
 }
 
-void drawPolygons( cairo_surface_t* surface, polygons_t* polygons ) 
+void draw_polygons( cairo_surface_t* surface, polygons_t* polygons ) 
 {
     int i,j;
     cairo_t* cr = cairo_create( surface );
@@ -63,7 +59,7 @@ void drawPolygons( cairo_surface_t* surface, polygons_t* polygons )
     cairo_destroy( cr );
 }
 
-void evolvePolygons( polygons_t* polygons ) 
+void evolve_polygons( polygons_t* polygons ) 
 {
     int polygon_number = rand_between( 0, POLYGON_COUNT - 1 );
     // Change vertices or color
@@ -80,7 +76,7 @@ void evolvePolygons( polygons_t* polygons )
     }
 }
 
-polygons_t* initializePolygons( cairo_surface_t* original ) 
+polygons_t* initialize_polygons( cairo_surface_t* original ) 
 {
     int i,j;
     polygons_t* polygons = malloc( sizeof( polygons_t ) * sizeof( char ) );

@@ -18,6 +18,7 @@
  */
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <time.h>
 
 #include "random.h"
@@ -29,10 +30,16 @@ void rand_seed()
 
 int rand_between( int start, int end ) 
 {
-    return ( ( rand() % ( end - start + 1 ) ) + start );
+    int randval = (int)(rand_double_between( start, end ));
+    return randval;
+}
+
+double rand_double_between( int start, int end ) 
+{
+    return ( ( rand_double() * (double)( end - start + 1 ) ) + (double)(start) );
 }
 
 double rand_double() 
 {
-    return ( (double)(rand()) / (double)RAND_MAX );
+    return ( (double)rand() / ( (double)(RAND_MAX) + (double)(1) ) );
 }

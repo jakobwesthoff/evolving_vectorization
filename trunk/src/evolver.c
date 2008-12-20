@@ -34,7 +34,6 @@ static void initialize_new_render_surface( cairo_surface_t* input, cairo_surface
 static void show_usage();
 
 
-
 int main( int argc, char** argv ) 
 {
     // Drawing and original cairo surfaces
@@ -81,23 +80,23 @@ int main( int argc, char** argv )
                 break;
                 case 'p':
                     png_write_iterations = atoi( optarg );
-                    printf( "png_write_iterations=%u\n", png_write_iterations );
+//                    printf( "png_write_iterations=%u\n", png_write_iterations );
                 break;
                 case 's':
                     svg_write_iterations = atoi( optarg );
-                    printf( "svg_write_iterations=%u\n", svg_write_iterations );
+//                    printf( "svg_write_iterations=%u\n", svg_write_iterations );
                 break;
                 case 't':
                     temperature = strtod( optarg, NULL );
-                    printf( "temperature=%f\n", temperature );
+//                    printf( "temperature=%f\n", temperature );
                 break;
                 case 'e':
                     epsilon = strtod( optarg, NULL );
-                    printf( "epsilon=%f\n", epsilon );
+//                    printf( "epsilon=%f\n", epsilon );
                 break;
                 case 'a':
                     alpha = strtod( optarg, NULL );
-                    printf( "alpha=%f\n", alpha );
+//                    printf( "alpha=%f\n", alpha );
                 break;
             }
         }
@@ -116,12 +115,34 @@ int main( int argc, char** argv )
     rand_seed();
 
     // Load the original image for comparison
-    input_surface = cairo_image_surface_create_from_png( input_file );
-    if ( cairo_surface_status( input_surface ) != CAIRO_STATUS_SUCCESS ) 
     {
-        printf( "Could not create input surface.\n" );
-        exit( EXIT_FAILURE );
-    }    
+        cairo_t* cr;
+        cairo_surface_t* loaded_image = cairo_image_surface_create_from_png( input_file );
+        if ( cairo_surface_status( loaded_image ) != CAIRO_STATUS_SUCCESS ) 
+        {
+            printf( "Could not create input surface.\n" );
+            printf( "Make sure the input file is a valid PNG image.\n" );
+            exit( EXIT_FAILURE );
+        }    
+
+        // Make sure the input surface is 32bit ARGB. This is needed for the
+        // fitness comaprison to provide useful result values.
+        input_surface = cairo_image_surface_create( 
+            CAIRO_FORMAT_ARGB32,
+            cairo_image_surface_get_width( loaded_image ),
+            cairo_image_surface_get_height( loaded_image )
+        );
+        cr = cairo_create( input_surface );
+        cairo_set_source_surface( cr,
+            loaded_image,
+            .0,
+            .0       
+        );
+        cairo_paint( cr );
+        
+        cairo_destroy( cr );
+        cairo_surface_destroy( loaded_image );
+    }
         
     // Create random polygon structure and initialize all needed values
     polygons = initialize_polygons( input_surface );
@@ -181,7 +202,7 @@ int main( int argc, char** argv )
         new_fitness = quadratic_error( input_surface, render_surface );
     
         // Store polygons with the best fitness found so far
-        if ( new_fitness < best_fitness ) 
+        if ( new_fitness <= best_fitness ) 
         {
             free( best_polygons );
             best_polygons = copy_polygons( new_polygons );
@@ -202,7 +223,11 @@ int main( int argc, char** argv )
             // Only change to worse evolution with falling probability based on
             // the iteration and the fitness difference
             // Small changes in fitness are more likely to be accepted.
-            if( rand_double() < exp( -1 * ( (double)( new_fitness - current_fitness ) / temperature ) ) ) 
+            double randval = rand_double();
+            double fitness_difference           = (double)(new_fitness) - (double)(current_fitness);
+            double fitness_temperature_division = ( fitness_difference / ( temperature * 100.0 ) );
+            double pb                           = exp( (double)(-1) * fitness_temperature_division );            
+            if( randval < pb ) 
             {
                 free( polygons );
                 polygons = new_polygons;

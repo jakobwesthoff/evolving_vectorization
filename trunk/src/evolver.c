@@ -47,6 +47,7 @@ int main( int argc, char** argv )
     // Iteration counters
     unsigned int iteration  = 0;
     unsigned int benefitial = 0;
+    unsigned int annealing  = 0;
 
     // Fitness levels
     unsigned int current_fitness = 0xffffffff;
@@ -151,7 +152,6 @@ int main( int argc, char** argv )
     draw_polygons( render_surface, polygons );
     current_fitness = quadratic_error( input_surface, render_surface );
     best_fitness    = current_fitness;
-    printf( "%u/%u/%f (%u)", benefitial, 0, temperature, best_fitness );
     
     // Start simulated annealing cycle to try finding the optimal polygon
     // approximation of the image
@@ -225,10 +225,11 @@ int main( int argc, char** argv )
             // Small changes in fitness are more likely to be accepted.
             double randval = rand_double();
             double fitness_difference           = (double)(new_fitness) - (double)(current_fitness);
-            double fitness_temperature_division = ( fitness_difference / ( temperature * 100.0 ) );
+            double fitness_temperature_division = ( fitness_difference / ( temperature ) );
             double pb                           = exp( (double)(-1) * fitness_temperature_division );            
             if( randval < pb ) 
             {
+                ++annealing;
                 free( polygons );
                 polygons = new_polygons;
                 current_fitness = new_fitness;
@@ -240,7 +241,7 @@ int main( int argc, char** argv )
             }
         }
 
-        printf( "\r%u/%u/%f (%u)            ", benefitial, iteration, temperature, best_fitness );
+        printf( "\r%u/%u/%u/%f (%u)            ", benefitial, annealing, iteration, temperature, best_fitness );
 
         // Check for abort condition
         if( temperature < epsilon ) 

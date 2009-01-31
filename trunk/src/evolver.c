@@ -29,7 +29,11 @@
 #include "polygon.h"
 
 
-static unsigned int quadratic_error( cairo_surface_t* original, cairo_surface_t* destination );
+#ifndef ULLONG_MAX
+    #define ULLONG_MAX 18446744073709551615ULL
+#endif
+
+static unsigned long long int quadratic_error( cairo_surface_t* original, cairo_surface_t* destination );
 static void initialize_new_render_surface( cairo_surface_t* input, cairo_surface_t** render_surface );
 static void show_usage();
 
@@ -50,13 +54,16 @@ int main( int argc, char** argv )
     unsigned int annealing  = 0;
 
     // Fitness levels
-    unsigned int current_fitness = 0xffffffff;
-    unsigned int best_fitness    = 0xffffffff;
+    unsigned long long int current_fitness = ULLONG_MAX;
+    unsigned long long int best_fitness    = ULLONG_MAX;
 
     // Default simulated annealing values
     double temperature = 1000.0;
     double alpha       = 0.99999;
     double epsilon     = 0.01;
+
+    // Default polygon count
+    int polygon_count = 50;
 
     // Default writeout values
     int svg_write_iterations = 10000;
@@ -71,7 +78,7 @@ int main( int argc, char** argv )
         extern char *optarg;
         extern int optind, optopt;
         int c;
-        while( ( c = getopt( argc, argv, "t:a:e:s:p:" ) ) != -1 ) 
+        while( ( c = getopt( argc, argv, "t:a:e:s:p:n:" ) ) != -1 ) 
         {
             switch( c ) 
             {
@@ -99,16 +106,19 @@ int main( int argc, char** argv )
                     alpha = strtod( optarg, NULL );
 //                    printf( "alpha=%f\n", alpha );
                 break;
+                case 'n':
+                    polygon_count = atoi( optarg );
+                break;
             }
+        }
+
+        if ( argc - optind < 2 ) 
+        {
+            show_usage();
+            exit( EXIT_FAILURE );
         }
     }
     
-    if ( argc - optind < 2 ) 
-    {
-        show_usage();
-        exit( EXIT_FAILURE );
-    }
-
     input_file       = argv[optind];      
     output_directory = argv[optind + 1];
 
@@ -146,18 +156,18 @@ int main( int argc, char** argv )
     }
         
     // Create random polygon structure and initialize all needed values
-    polygons = initialize_polygons( input_surface );
+    polygons = initialize_polygons( input_surface, polygon_count );
     best_polygons = copy_polygons( polygons );
     initialize_new_render_surface( input_surface, &render_surface );
     draw_polygons( render_surface, polygons );
     current_fitness = quadratic_error( input_surface, render_surface );
     best_fitness    = current_fitness;
     
-    // Start simulated annealing cycle to try finding the optimal polygon
+    // Start simulated annealing cycle and try to find the optimal polygon
     // approximation of the image
     while( 1 ) 
     {
-        unsigned int new_fitness;
+        unsigned long long int new_fitness;
         polygons_t* new_polygons;       
         
         // Write newline before any other status message
@@ -204,7 +214,7 @@ int main( int argc, char** argv )
         // Store polygons with the best fitness found so far
         if ( new_fitness <= best_fitness ) 
         {
-            free( best_polygons );
+            free_polygons( best_polygons );
             best_polygons = copy_polygons( new_polygons );
             best_fitness = new_fitness;
         }
@@ -214,7 +224,7 @@ int main( int argc, char** argv )
         if ( new_fitness < current_fitness ) 
         {
             ++benefitial;
-            free( polygons );
+            free_polygons( polygons );
             polygons = new_polygons;
             current_fitness = new_fitness;
         }
@@ -224,24 +234,24 @@ int main( int argc, char** argv )
             // the iteration and the fitness difference
             // Small changes in fitness are more likely to be accepted.
             double randval = rand_double();
-            double fitness_difference           = (double)(new_fitness) - (double)(current_fitness);
-            double fitness_temperature_division = ( fitness_difference / ( temperature ) );
+            long long int fitness_difference           = new_fitness - current_fitness;
+            double fitness_temperature_division = ( fitness_difference / ( temperature * 10.0 ) );
             double pb                           = exp( (double)(-1) * fitness_temperature_division );            
             if( randval < pb ) 
             {
                 ++annealing;
-                free( polygons );
+                free_polygons( polygons );
                 polygons = new_polygons;
                 current_fitness = new_fitness;
             }
             else 
             {
                 // Don't accept the new change
-                free( new_polygons );
+                free_polygons( new_polygons );
             }
         }
 
-        printf( "\r%u/%u/%u/%f (%u)            ", benefitial, annealing, iteration, temperature, best_fitness );
+        printf( "\r%u/%u/%u/%f (%llu)            ", benefitial, annealing, iteration, temperature, best_fitness );
 
         // Check for abort condition
         if( temperature < epsilon ) 
@@ -275,9 +285,9 @@ int main( int argc, char** argv )
     
     // Free the allocated memory
     if ( polygons != NULL  )
-        free( polygons );
+        free_polygons( polygons );
     if ( best_polygons != NULL  )
-        free( best_polygons );
+        free_polygons( best_polygons );
 
     cairo_surface_destroy( render_surface );
     cairo_surface_destroy( input_surface );
@@ -300,13 +310,15 @@ static void show_usage()
                (Default: 0.01)\n" );
     printf( "   -a <float>: Alpha to cool temperature by every\n\
                iteration (Default: 0.99999)\n" );
+    printf( "   -n <int>:   Number of polygons to evolve \n\
+               (Default: 50)\n" );
 }
 
-static unsigned int quadratic_error( cairo_surface_t* original, cairo_surface_t* destination ) 
+static unsigned long long int quadratic_error( cairo_surface_t* original, cairo_surface_t* destination ) 
 {
     unsigned char *original_data, *destination_data;
     int i;
-    unsigned int quadratic_error = 0;        
+    unsigned long long int quadratic_error = 0;        
     int size = cairo_image_surface_get_height( original )*cairo_image_surface_get_stride( original );
 
     original_data = cairo_image_surface_get_data( original );

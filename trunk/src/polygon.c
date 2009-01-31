@@ -27,8 +27,10 @@
 
 polygons_t* copy_polygons( polygons_t* polygons )
 {
-    polygons_t* copy = malloc( sizeof( polygons_t ) * sizeof( char ) );
-    memcpy( copy, polygons, sizeof( polygons_t ) * sizeof( char ) );
+    polygons_t* copy = allocate_polygon_structure( polygons->count );
+    copy->original_width   = polygons->original_width;
+    copy->original_height = polygons->original_height;
+    memcpy( copy->polygon, polygons->polygon, sizeof( polygon_t ) * sizeof( char ) * polygons->count );    
     return copy;
 }
 
@@ -37,7 +39,7 @@ void draw_polygons( cairo_surface_t* surface, polygons_t* polygons )
     int i,j;
     cairo_t* cr = cairo_create( surface );
     
-    for( i=0; i<POLYGON_COUNT; ++i ) 
+    for( i=0; i<polygons->count; ++i ) 
     {
         cairo_save( cr );
         
@@ -88,7 +90,7 @@ void draw_polygons_to_svg( polygons_t* polygons, char* filename )
 
 void evolve_polygons( polygons_t* polygons ) 
 {
-    int polygon_number = rand_between( 0, POLYGON_COUNT - 1 );
+    int polygon_number = rand_between( 0, polygons->count - 1 );
     // Change vertices or color
     if( rand_between( 0, 1 ) == 1 ) 
     {
@@ -103,15 +105,15 @@ void evolve_polygons( polygons_t* polygons )
     }
 }
 
-polygons_t* initialize_polygons( cairo_surface_t* original ) 
+polygons_t* initialize_polygons( cairo_surface_t* original, int count ) 
 {
     int i,j;
-    polygons_t* polygons = malloc( sizeof( polygons_t ) * sizeof( char ) );
+    polygons_t* polygons = allocate_polygon_structure( count );
 
     polygons->original_width = cairo_image_surface_get_width( original );
     polygons->original_height = cairo_image_surface_get_height( original );
     
-    for( i=0; i<POLYGON_COUNT; ++i ) 
+    for( i=0; i<count; ++i ) 
     {
         for( j=0; j<POLYGON_VERTICES; ++j ) 
         {
@@ -125,4 +127,18 @@ polygons_t* initialize_polygons( cairo_surface_t* original )
     }
 
     return polygons;
+}
+
+static polygons_t* allocate_polygon_structure( int count ) 
+{
+    polygons_t* p = malloc( sizeof( polygons_t ) * sizeof( char ) );
+    p->polygon = malloc( sizeof( polygon_t ) * sizeof( char ) * count );
+    p->count = count;
+    return p;
+}
+
+void free_polygons( polygons_t* polygons ) 
+{
+    free( polygons->polygon );
+    free( polygons );
 }

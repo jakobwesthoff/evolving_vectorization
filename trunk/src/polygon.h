@@ -21,7 +21,8 @@
 #define POLYGON_H
 
 #define POLYGON_VERTICES 6
-#define POLYGON_COUNT 50
+
+//#define POLYGON_COUNT 5
 
 typedef struct vertex 
 {
@@ -36,12 +37,13 @@ typedef struct polygon
 
 typedef struct polygons 
 {
-    polygon_t polygon[POLYGON_COUNT];
+    polygon_t *polygon;
     int original_width, original_height;
+    int count;
 } polygons_t;
 
 
-polygons_t* initialize_polygons( cairo_surface_t* original ); 
+polygons_t* initialize_polygons( cairo_surface_t* original, int count ); 
 
 void draw_polygons( cairo_surface_t* surface, polygons_t* polygons );
 void draw_polygons_to_svg( polygons_t* polygons, char* filename );
@@ -49,5 +51,9 @@ void draw_polygons_to_svg( polygons_t* polygons, char* filename );
 void evolve_polygons( polygons_t* polygons );
 
 polygons_t* copy_polygons( polygons_t* polygons );
+
+static polygons_t* allocate_polygon_structure( int count );
+
+void free_polygons( polygons_t* polygons );
 
 #endif

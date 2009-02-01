@@ -101,7 +101,13 @@ void evolve_polygons( polygons_t* polygons )
     else 
     {
         int color_number = rand_between( 0, 3 );
-        polygons->polygon[polygon_number].color[color_number] = rand_between( 0, 255 );
+        int color        = rand_between( 0, 255 );
+        // We don not want to create completely transparent polygons
+        if ( color_number == 3 && color == 0 ) 
+        {
+            color = 1;
+        }
+        polygons->polygon[polygon_number].color[color_number] = color;
     }
 }
 

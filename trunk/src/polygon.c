@@ -95,8 +95,8 @@ void evolve_polygons( polygons_t* polygons )
     if( rand_between( 0, 1 ) == 1 ) 
     {
         int vertex_number = rand_between( 0, POLYGON_VERTICES - 1 );
-        polygons->polygon[polygon_number].vertex[vertex_number].x = rand_between( 0, polygons->original_width - 1 );
-        polygons->polygon[polygon_number].vertex[vertex_number].y = rand_between( 0, polygons->original_height - 1 );
+        polygons->polygon[polygon_number].vertex[vertex_number].x = rand_between( 0, polygons->original_width );
+        polygons->polygon[polygon_number].vertex[vertex_number].y = rand_between( 0, polygons->original_height );
     }
     else 
     {
@@ -123,8 +123,8 @@ polygons_t* initialize_polygons( cairo_surface_t* original, int count )
     {
         for( j=0; j<POLYGON_VERTICES; ++j ) 
         {
-            polygons->polygon[i].vertex[j].x = rand_between( 0, polygons->original_width - 1 );
-            polygons->polygon[i].vertex[j].y = rand_between( 0, polygons->original_height - 1 );
+            polygons->polygon[i].vertex[j].x = rand_between( 0, polygons->original_width );
+            polygons->polygon[i].vertex[j].y = rand_between( 0, polygons->original_height );
         }
         for( j=0; j<4; ++j ) 
         {

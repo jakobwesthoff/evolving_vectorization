@@ -337,14 +337,16 @@ static unsigned long long int quadratic_error( cairo_surface_t* original, cairo_
     for( i=0; i<size; ++i ) 
     {
         int difference = destination_data[i] - original_data[i];
+        int quadratic_difference = difference * difference;
+
         // Make sure there will be no overflow
-        if ( quadratic_error + ( difference*difference ) < quadratic_error ) 
+        if ( quadratic_error + quadratic_difference < quadratic_error ) 
         {
-            return 0xffffffff;
+            return ULLONG_MAX;
         }
         else 
         {
-            quadratic_error += difference*difference;
+            quadratic_error += quadratic_difference;
         }
     }
     return quadratic_error;
